@@ -165,32 +165,32 @@ void mainTask(void const * argument)
   for(;;)
   {
 //		GPIOC->ODR ^= GPIO_ODR_OD13;
-		HAL_IWDG_Refresh(&hiwdg);
-		TempKot = (!ds18b20[0].DataIsValid) ? 0 : ds18b20[0].Temperature;             	//get t from sensor 1
-		sprintf(stringForLcd, "Temp = %.1f      ", TempKot);
+	HAL_IWDG_Refresh(&hiwdg);
+	TempKot = (!ds18b20[0].DataIsValid) ? 0 : ds18b20[0].Temperature;             	//get t from sensor 1
+	sprintf(stringForLcd, "Temp = %.1f      ", TempKot);
     lcdSetCursorPosition(0, 0);
-		lcdPrintStr((uint8_t*)stringForLcd, 16);
+	lcdPrintStr((uint8_t*)stringForLcd, 16);
     lcdSetCursorPosition(0, 1);
 		
-		if((TempKot >= 1) && (TempKot <= 60) && (nasosFlag == 1)) {
-			NASOS_OFF;
-			nasosFlag = 0;
-			lcdPrintStr((uint8_t*)"NASOS OFF", 9); 
-		}
-		if((TempKot >= 1) && (TempKot >= 61) && (nasosFlag == 0)) {		
-			NASOS_ON;
-			nasosFlag = 1;
-			lcdPrintStr((uint8_t*)"NASOS ON  ", 10); 
-		}
+	if((TempKot >= 1) && (TempKot <= 60) && (nasosFlag == 1)) {
+		NASOS_OFF;
+		nasosFlag = 0;
+		lcdPrintStr((uint8_t*)"NASOS OFF", 9); 
+	}
+	if((TempKot >= 1) && (TempKot >= 61) && (nasosFlag == 0)) {		
+		NASOS_ON;
+		nasosFlag = 1;
+		lcdPrintStr((uint8_t*)"NASOS ON  ", 10); 
+	}
 
-		if(TempKot < 1) {
-			NASOS_ON;
-			nasosFlag = 1;
-			lcdSetCursorPosition(0, 0);
-			lcdPrintStr((uint8_t*)"ALARM            ", 16);
-			lcdSetCursorPosition(0, 1);
-			lcdPrintStr((uint8_t*)"NASOS ON  ", 10);
-		}
+	if(TempKot < 1) {
+		NASOS_ON;
+		nasosFlag = 1;
+		lcdSetCursorPosition(0, 0);
+		lcdPrintStr((uint8_t*)"ALARM            ", 16);
+		lcdSetCursorPosition(0, 1);
+		lcdPrintStr((uint8_t*)"NASOS ON  ", 10);
+	}
     osDelay(1000);
   }
   /* USER CODE END mainTask */

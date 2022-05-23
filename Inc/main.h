@@ -66,8 +66,8 @@ void Error_Handler(void);
 #define Relay_Pin GPIO_PIN_10
 #define Relay_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define NASOS_ON 			GPIOB->BSRR |= GPIO_BSRR_BS10;
-#define NASOS_OFF 		GPIOB->BSRR |= GPIO_BSRR_BR10;
+#define NASOS_ON 		GPIOB->BSRR |= GPIO_BSRR_BR10;
+#define NASOS_OFF 		GPIOB->BSRR |= GPIO_BSRR_BS10;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
