@@ -26,7 +26,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-//#include "lcd_hd44780_i2c.h"
 #include "lcd_i2c_pcf8574.h"
 #include "ds18b20.h"
 #include "stdio.h"
@@ -156,22 +155,28 @@ void mainTask(void const * argument)
   /* USER CODE BEGIN mainTask */
 	char stringForLcd[16];
 	uint8_t nasosFlag = 1;
-	
-	osDelay(20);
+
 	lcd_Init();
 	lcd_SendString((char*)"Termostat-v3.2");
 	lcd_SetCursor(0, 1);
 	lcd_SendString((char*)"F401-FreeRTOS");
 	vTaskDelay(2000);
 	lcd_Clearscreen();
-	
+	if(RTC->BKP0R == 0) {
+		RTC->BKP0R = 1;
+		HAL_NVIC_SystemReset();
+	}
   /* Infinite loop */
   for(;;)
   {
-//		GPIOC->ODR ^= GPIO_ODR_OD13;
 	HAL_IWDG_Refresh(&hiwdg);
 	TempKot = (!ds18b20[0].DataIsValid) ? 0 : ds18b20[0].Temperature;             	//get t from sensor 1
-	sprintf(stringForLcd, "Temp = %.1f      ", TempKot);
+	if(TempKot == 0) {
+		sprintf(stringForLcd, "ALARM           ");
+	}
+	else
+		sprintf(stringForLcd, "Temp = %.1f      ", TempKot);
+	
 	lcd_SetCursor(0, 0);
 	lcd_SendString(stringForLcd);
 	lcd_SetCursor(0, 1);
@@ -181,7 +186,7 @@ void mainTask(void const * argument)
 		nasosFlag = 0;
 		lcd_SendString((char*)"NASOS OFF ");
 	}
-	if((TempKot >= 1) && (TempKot >= 61) && (nasosFlag == 0)) {		
+	if((TempKot >= 61) && (nasosFlag == 0)) {			
 		NASOS_ON;
 		nasosFlag = 1;
 		lcd_SendString((char*)"NASOS ON  ");
@@ -190,9 +195,6 @@ void mainTask(void const * argument)
 	if(TempKot < 1) {
 		NASOS_ON;
 		nasosFlag = 1;
-		lcd_home();
-		lcd_SendString((char*)"ALARM           ");
-		lcd_SetCursor(0, 1);
 		lcd_SendString((char*)"NASOS ON  ");
 	}
     osDelay(1000);

@@ -26,7 +26,8 @@ HAL_StatusTypeDef lcd_write(uint8_t data, uint8_t rs)
 	DATA_BUFFER[1] = (HIGH_BIT|rs|LCD_PIN_LIGHT);
 	DATA_BUFFER[2] = (LOW_BIT |rs|LCD_PIN_EN|LCD_PIN_LIGHT);
 	DATA_BUFFER[3] = (LOW_BIT |rs|LCD_PIN_LIGHT);
-	HAL_Delay(LCD_DELAY_MS);
+	//HAL_Delay(LCD_DELAY_MS);
+	vTaskDelay(LCD_DELAY_MS);
 	return (HAL_StatusTypeDef)HAL_I2C_Master_Transmit(&hi2c1, ADRESS, (uint8_t*)DATA_BUFFER, sizeof(DATA_BUFFER), HAL_MAX_DELAY);
 }
 
@@ -88,13 +89,17 @@ void lcd_SendString(char *str)
 void lcd_Init(void)
 {
 	lcd_command(LCD_FUNCTION_DEFAULT);
-	HAL_Delay(10);
+//	HAL_Delay(10);
+	vTaskDelay(10);
 	lcd_command(1 << LCD_HOME);
-	HAL_Delay(10);
+//	HAL_Delay(10);
+	vTaskDelay(10);
 	lcd_command(LCD_DISP_ON);
-	HAL_Delay(10);
+//	HAL_Delay(10);
+	vTaskDelay(10);
 	lcd_command(1 << LCD_CLR);
-	HAL_Delay(10);
+//	HAL_Delay(10);
+	vTaskDelay(10);
 }
 
 void lcd_ClearLine(uint8_t line)

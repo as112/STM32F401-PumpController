@@ -10,6 +10,10 @@
 
 #include "main.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "cmsis_os.h"
+
 #define LCD_LINES           2     /* number of visible lines of the display */
 #define LCD_DISP_LENGTH     16    /* visibles characters per line of the display */
 #define ADRESS         ((uint8_t)0x4E)	//4E
