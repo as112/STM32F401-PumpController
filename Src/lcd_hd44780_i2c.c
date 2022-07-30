@@ -91,7 +91,7 @@ bool lcdInit(I2C_HandleTypeDef *hi2c, uint8_t address, uint8_t lines, uint8_t co
             vTaskDelayUntil(&xLastWakeTime, (TickType_t)5);
         }
     }
-
+	
     /* Lets turn to 4-bit at least */
     lcdCommandBuffer[0] = LCD_BIT_BACKIGHT_ON | LCD_BIT_E | (LCD_MODE_4BITS << 4);
     lcdCommandBuffer[1] = lcdCommandBuffer[0];
@@ -100,7 +100,7 @@ bool lcdInit(I2C_HandleTypeDef *hi2c, uint8_t address, uint8_t lines, uint8_t co
     if (HAL_I2C_Master_Transmit_DMA(lcdParams.hi2c, lcdParams.address, (uint8_t*)lcdCommandBuffer, 3) != HAL_OK) {
         return false;
     }
-
+	
     while (HAL_I2C_GetState(lcdParams.hi2c) != HAL_I2C_STATE_READY) {
         vTaskDelay(1);
     }

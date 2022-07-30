@@ -26,7 +26,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-#include "lcd_hd44780_i2c.h"
+//#include "lcd_hd44780_i2c.h"
+#include "lcd_i2c_pcf8574.h"
 #include "ds18b20.h"
 #include "stdio.h"
 
@@ -155,12 +156,15 @@ void mainTask(void const * argument)
   /* USER CODE BEGIN mainTask */
 	char stringForLcd[16];
 	uint8_t nasosFlag = 1;
-	lcdInit(&hi2c1, (uint8_t)0x27, (uint8_t)2, (uint8_t)16);
-	lcdPrintStr((uint8_t*)"Termostat-v3.1    ", 16);
-	lcdSetCursorPosition(0, 1);
-	lcdPrintStr((uint8_t*)"F401-FreeRTOS    ", 16);
+	
+	osDelay(20);
+	lcd_Init();
+	lcd_SendString((char*)"Termostat-v3.2");
+	lcd_SetCursor(0, 1);
+	lcd_SendString((char*)"F401-FreeRTOS");
 	vTaskDelay(2000);
-	lcdCommand(LCD_CLEAR, LCD_PARAM_SET);
+	lcd_Clearscreen();
+	
   /* Infinite loop */
   for(;;)
   {
@@ -168,28 +172,28 @@ void mainTask(void const * argument)
 	HAL_IWDG_Refresh(&hiwdg);
 	TempKot = (!ds18b20[0].DataIsValid) ? 0 : ds18b20[0].Temperature;             	//get t from sensor 1
 	sprintf(stringForLcd, "Temp = %.1f      ", TempKot);
-    lcdSetCursorPosition(0, 0);
-	lcdPrintStr((uint8_t*)stringForLcd, 16);
-    lcdSetCursorPosition(0, 1);
+	lcd_SetCursor(0, 0);
+	lcd_SendString(stringForLcd);
+	lcd_SetCursor(0, 1);
 		
 	if((TempKot >= 1) && (TempKot <= 60) && (nasosFlag == 1)) {
 		NASOS_OFF;
 		nasosFlag = 0;
-		lcdPrintStr((uint8_t*)"NASOS OFF", 9); 
+		lcd_SendString((char*)"NASOS OFF ");
 	}
 	if((TempKot >= 1) && (TempKot >= 61) && (nasosFlag == 0)) {		
 		NASOS_ON;
 		nasosFlag = 1;
-		lcdPrintStr((uint8_t*)"NASOS ON  ", 10); 
+		lcd_SendString((char*)"NASOS ON  ");
 	}
 
 	if(TempKot < 1) {
 		NASOS_ON;
 		nasosFlag = 1;
-		lcdSetCursorPosition(0, 0);
-		lcdPrintStr((uint8_t*)"ALARM            ", 16);
-		lcdSetCursorPosition(0, 1);
-		lcdPrintStr((uint8_t*)"NASOS ON  ", 10);
+		lcd_home();
+		lcd_SendString((char*)"ALARM           ");
+		lcd_SetCursor(0, 1);
+		lcd_SendString((char*)"NASOS ON  ");
 	}
     osDelay(1000);
   }
