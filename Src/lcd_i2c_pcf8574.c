@@ -6,6 +6,14 @@
  */
 #include "lcd_i2c_pcf8574.h"
 
+#define USE_FREERTOS
+
+#ifdef USE_FREERTOS
+#include "FreeRTOS.h"
+#include "task.h"
+#include "cmsis_os.h"
+#endif
+
 extern I2C_HandleTypeDef hi2c1;
 
 #if LCD_LINES==1
@@ -26,8 +34,11 @@ HAL_StatusTypeDef lcd_write(uint8_t data, uint8_t rs)
 	DATA_BUFFER[1] = (HIGH_BIT|rs|LCD_PIN_LIGHT);
 	DATA_BUFFER[2] = (LOW_BIT |rs|LCD_PIN_EN|LCD_PIN_LIGHT);
 	DATA_BUFFER[3] = (LOW_BIT |rs|LCD_PIN_LIGHT);
-	//HAL_Delay(LCD_DELAY_MS);
+#ifdef USE_FREERTOS
 	vTaskDelay(LCD_DELAY_MS);
+#else 
+	HAL_Delay(LCD_DELAY_MS);
+#endif
 	return (HAL_StatusTypeDef)HAL_I2C_Master_Transmit(&hi2c1, ADRESS, (uint8_t*)DATA_BUFFER, sizeof(DATA_BUFFER), HAL_MAX_DELAY);
 }
 
@@ -40,6 +51,23 @@ void lcd_command(uint8_t cmd)
 void lcd_data(uint8_t data)
 {
     lcd_write(data,LCD_PIN_RS); // rs = 1
+}
+
+void lcdLoadCustomChar(uint8_t cell, uint8_t * charMap) {
+
+    // Stop, if trying to load to incorrect cell
+    if (cell > 7) {
+        return;
+    }
+
+    uint8_t lcdCommand = LCD_BIT_SETCGRAMADDR | (cell << 3);
+
+	lcd_command(lcdCommand);
+	
+    for (uint8_t i = 0; i < 8; ++i) {
+		lcd_data(charMap[i]);
+    }
+	lcd_command(LCD_BIT_SETDDRAMADDR);
 }
 
 void lcd_SetCursor(uint8_t x, uint8_t y)
@@ -88,18 +116,51 @@ void lcd_SendString(char *str)
 
 void lcd_Init(void)
 {
-	lcd_command(LCD_FUNCTION_DEFAULT);
-//	HAL_Delay(10);
-	vTaskDelay(10);
+	//lcd_command(LCD_FUNCTION_DEFAULT);
+	lcd_command(0x30);
+#ifdef USE_FREERTOS
+	vTaskDelay(5);
+#else 
+	HAL_Delay(5);
+#endif
+	//lcd_command(LCD_FUNCTION_DEFAULT);
+	lcd_command(0x30);
+#ifdef USE_FREERTOS
+	vTaskDelay(1);
+#else 
+	HAL_Delay(1);
+#endif
+	//lcd_command(LCD_FUNCTION_DEFAULT);
+	lcd_command(0x30);
+#ifdef USE_FREERTOS
+	vTaskDelay(1);
+#else 
+	HAL_Delay(1);
+#endif
 	lcd_command(1 << LCD_HOME);
-//	HAL_Delay(10);
-	vTaskDelay(10);
+#ifdef USE_FREERTOS
+	vTaskDelay(1);
+#else 
+	HAL_Delay(1);
+#endif
+	lcd_command(0x28); // display off
+#ifdef USE_FREERTOS
+	vTaskDelay(1);
+#else 
+	HAL_Delay(1);
+#endif
 	lcd_command(LCD_DISP_ON);
-//	HAL_Delay(10);
-	vTaskDelay(10);
+#ifdef USE_FREERTOS
+	vTaskDelay(1);
+#else 
+	HAL_Delay(1);
+#endif
 	lcd_command(1 << LCD_CLR);
-//	HAL_Delay(10);
-	vTaskDelay(10);
+#ifdef USE_FREERTOS
+	vTaskDelay(1);
+#else 
+	HAL_Delay(1);
+#endif
 }
 
 void lcd_ClearLine(uint8_t line)

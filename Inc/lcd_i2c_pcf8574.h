@@ -10,10 +10,6 @@
 
 #include "main.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "cmsis_os.h"
-
 #define LCD_LINES           2     /* number of visible lines of the display */
 #define LCD_DISP_LENGTH     16    /* visibles characters per line of the display */
 #define ADRESS         ((uint8_t)0x4E)	//4E
@@ -77,6 +73,9 @@
 #define LCD_FUNCTION_8BIT_1LINE  ((uint8_t)0x30)   /* 8-bit interface, single line, 5x7 dots */
 #define LCD_FUNCTION_8BIT_2LINES ((uint8_t)0x38)   /* 8-bit interface, dual line,   5x7 dots */
 
+#define LCD_BIT_SETCGRAMADDR       ((uint8_t)0x40U)
+#define LCD_BIT_SETDDRAMADDR       ((uint8_t)0x80U)
+
 extern void lcd_Init(void);
 extern void lcd_Clearscreen(void);
 extern void lcd_home(void);
@@ -85,5 +84,5 @@ extern void lcd_command(uint8_t cmd);
 extern void lcd_data(uint8_t data);
 extern void lcd_SendString(char *str);
 extern void lcd_ClearLine(uint8_t line);
-
+extern void lcdLoadCustomChar(uint8_t cell, uint8_t * charMap);
 #endif /* LCD_I2C_PCF8574_H_ */

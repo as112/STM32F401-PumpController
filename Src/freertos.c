@@ -34,7 +34,10 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+void PrintNasosON(void);
+void PrintNasosOFF(void);
+void PrintAlarm(void);
+void PrintTemp(void);
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -162,41 +165,44 @@ void mainTask(void const * argument)
 	lcd_SendString((char*)"F401-FreeRTOS");
 	vTaskDelay(2000);
 	lcd_Clearscreen();
-	if(RTC->BKP0R == 0) {
-		RTC->BKP0R = 1;
-		HAL_NVIC_SystemReset();
-	}
+//	if(RTC->BKP0R == 0) {
+//		RTC->BKP0R = 1;
+//		HAL_NVIC_SystemReset();
+//	}
   /* Infinite loop */
   for(;;)
   {
-	HAL_IWDG_Refresh(&hiwdg);
+	//HAL_IWDG_Refresh(&hiwdg);
 	TempKot = (!ds18b20[0].DataIsValid) ? 0 : ds18b20[0].Temperature;             	//get t from sensor 1
-	if(TempKot == 0) {
-		sprintf(stringForLcd, "ALARM           ");
-	}
-	else
-		sprintf(stringForLcd, "Temp = %.1f      ", TempKot);
-	
 	lcd_SetCursor(0, 0);
-	lcd_SendString(stringForLcd);
-	lcd_SetCursor(0, 1);
-		
+	if(TempKot == 0) {
+		NASOS_ON;
+		nasosFlag = 1;
+		PrintAlarm();
+		lcd_SetCursor(0, 1);
+		PrintNasosON();
+		osDelay(3000);
+		continue;
+	}
+	
 	if((TempKot >= 1) && (TempKot <= 60) && (nasosFlag == 1)) {
 		NASOS_OFF;
 		nasosFlag = 0;
-		lcd_SendString((char*)"NASOS OFF ");
+		PrintTemp();
+		lcd_SetCursor(0, 1);
+		PrintNasosOFF();
 	}
 	if((TempKot >= 61) && (nasosFlag == 0)) {			
 		NASOS_ON;
 		nasosFlag = 1;
-		lcd_SendString((char*)"NASOS ON  ");
+		PrintTemp();
+		lcd_SetCursor(0, 1);
+		PrintNasosON();
 	}
-
-	if(TempKot < 1) {
-		NASOS_ON;
-		nasosFlag = 1;
-		lcd_SendString((char*)"NASOS ON  ");
-	}
+	lcd_SetCursor(4, 0);
+	sprintf(stringForLcd, " = %.1f  ", TempKot);
+	lcd_SendString(stringForLcd);
+	
     osDelay(1000);
   }
   /* USER CODE END mainTask */
@@ -204,7 +210,48 @@ void mainTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-     
+uint8_t symL[8]   = { 0x0F, 0x05, 0x05, 0x05, 0x05, 0x15, 0x09 }; 		// Л
+uint8_t symY[8] = { 0x11, 0x11, 0x11, 0x19, 0x15, 0x15, 0x19, 0x00};	// Ы
+uint8_t symI[8]   = { 0x11, 0x11, 0x13, 0x15, 0x19, 0x11, 0x11 }; 		// И
+uint8_t symJA[8]  = { 0x0F, 0x11, 0x11, 0x0F, 0x05, 0x09, 0x11 }; 		// Я
+uint8_t symP[8]   = { 0x1F, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11 }; 		// П
+
+void PrintNasosON(void) {
+	
+	lcd_SendString((char*)"HACOC BK   ");
+	lcdLoadCustomChar(0, symL);
+	lcd_SetCursor(8, 1);
+	lcd_data(0);
+}
+void PrintNasosOFF(void) {
+	
+	lcd_SendString((char*)"HACOC B   ");
+	lcdLoadCustomChar(1, symY);
+	lcd_SetCursor(7, 1);
+	lcd_data(1);
+	lcd_SetCursor(8, 1);
+	lcd_SendString((char*)"K");
+	lcdLoadCustomChar(2, symL);
+	lcd_SetCursor(9, 1);
+	lcd_data(2);
+}
+void PrintAlarm(void) {
+	
+	lcd_SendString((char*)"ABAP          ");
+	lcdLoadCustomChar(3, symI);
+	lcd_SetCursor(4, 0);
+	lcd_data(3);
+	lcdLoadCustomChar(4, symJA);
+	lcd_SetCursor(5, 0);
+	lcd_data(4);
+}
+void PrintTemp(void) {
+	
+	lcd_SendString((char*)"TEM        ");
+	lcdLoadCustomChar(5, symP);
+	lcd_SetCursor(3, 0);
+	lcd_data(5);
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
